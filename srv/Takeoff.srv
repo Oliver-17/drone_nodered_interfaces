@@ -1,0 +1,9 @@
+# 起飛到指定高度，然後由 PX4 自己轉為盤旋（AUTO_LOITER）。
+#
+# 為什麼不用 std_srvs/Trigger：Trigger 的請求是空的，帶不了高度。
+# 高度如果改放節點參數，就得「先設參數、再起飛」兩步，中間有人改了參數就會飛錯高度。
+
+float32 altitude    # 起飛高度（離地公尺）。超出 drone_api_node 的上下限會被拒絕
+---
+bool success        # PX4 是否接受了起飛指令（不代表已經飛到該高度）
+string message      # 給人看的說明，失敗時寫原因

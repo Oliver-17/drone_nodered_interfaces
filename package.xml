@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>drone_nodered_interfaces</name>
+  <version>0.1.0</version>
+  <description>drone_nodered 的服務格式（例如帶高度的起飛）。只有格式定義，沒有程式。</description>
+
+  <maintainer email="oliver.920906@gmail.com">oliver</maintainer>
+  <license>MIT</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <buildtool_depend>rosidl_default_generators</buildtool_depend>
+  <exec_depend>rosidl_default_runtime</exec_depend>
+
+  <!-- 讓 colcon 知道這是訊息格式套件，要先於使用它的套件編譯 -->
+  <member_of_group>rosidl_interface_packages</member_of_group>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
