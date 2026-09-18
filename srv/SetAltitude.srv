@@ -1,0 +1,10 @@
+# 在空中調整高度（維持水平位置）。
+# 欄位和 Takeoff 一樣，但刻意分成兩個型別 —— 型別名稱就是文件，
+# 在 Node-RED 或 ros2 service call 看到 SetAltitude 就知道不是起飛。
+#
+# altitude：離「起飛點」的高度（公尺），不是海拔。
+#           節點會用 VehicleLocalPosition.ref_alt 換算成 PX4 要的海拔。
+float32 altitude
+---
+bool success
+string message

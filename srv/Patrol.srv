@@ -1,0 +1,16 @@
+# 依序飛過一串點（巡航）。用 PX4 內建的 DO_REPOSITION，不是 offboard。
+#
+# 座標是「離起飛點」的公尺數，用 PX4 的本地座標系（NED）：
+#     x 北為正、y 東為正。節點會換算成 PX4 要的經緯度。
+#
+# 為什麼用兩個陣列而不是 geometry_msgs/Point[]：
+#     從 Node-RED 傳 JSON 時 {"x":[10,10,0,0],"y":[0,10,10,0]} 比
+#     [{"x":10,"y":0,"z":0},...] 好讀好改，而且這裡的 z 本來就不是每點各自的高度。
+float32[] x
+float32[] y
+float32 altitude    # 巡航高度（離起飛點，公尺）。0 = 維持目前高度
+float32 speed       # 水平速度（m/s）。0 = 用 PX4 預設
+int32 loops         # 繞幾圈。0 或 1 都是一圈
+---
+bool success        # 是否「開始」巡航（不代表已經飛完）
+string message
