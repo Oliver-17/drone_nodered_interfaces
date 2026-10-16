@@ -1,0 +1,50 @@
+# 用 Nav2 導航到 map 座標系的一個點（會自動繞開地圖上的障礙物）。
+#
+# ⚠️ 座標系和 api/patrol 不一樣，這是這個 API 裡唯一的例外，要記住：
+#
+#     api/patrol   「離起飛點」的公尺數，PX4 本地 NED（x 北、y 東）
+#     api/goto     map 座標系，ENU（x 東、y 北），原點在地圖的原點
+#
+#   為什麼不統一：map 座標系才是 Nav2、RViz 的「2D Goal Pose」、
+#   以及 config/warehouse_geometry.yaml 裡走道中心共用的那一套。
+#   倉庫場景裡飛機生成在 map 的 (-14, -9)，所以「飛到 map 的 (0,0)」
+#   等於「離起飛點北 +9、東 +14」—— 兩者不會剛好相等，不要混用。
+#   欄位刻意叫 map_x / map_y 而不是 x / y，就是為了在呼叫端看得出來。
+#
+# 前置條件（不滿足會回 success=false 並說原因）：
+#   ① PX4 有連上（agent 在跑）
+#   ② 飛機已經在空中（先 api/takeoff）
+#   ③ Nav2 在跑（/navigate_to_pose 這個 action 存在）
+#   ④ px4_bridge 在跑（Nav2 的 cmd_vel 要有人翻譯成 offboard setpoint）
+#
+# 這個服務只負責「開始導航」—— 飛完要好幾十秒，服務不能等它做完才回應。
+# 進度看 <ns>/api/status 的 nav 欄位（含 Nav2 回報的剩餘距離）。
+
+float32 map_x
+float32 map_y
+# 終點朝向（弧度，ENU，0 = 朝東）。
+#
+# 「不在乎」有兩種寫法，兩個都認：
+#     NaN              從終端機 / C++ 呼叫時用這個（ros2 service call 寫 .nan）
+#     |yaw| > pi       例如 999。**從 Node-RED 要用這個**
+#
+# ⚠️ 為什麼要有第二種（2026-10-08 查證）：
+#    rosbridge 不能帶 NaN 給浮點欄位。它的型別檢查是嚴格的 ——
+#        rosbridge_library/internal/message_conversion.py:462-465
+#        if isinstance(msg, str) and rostype in type_map[msgtype.__name__]: ...
+#        raise FieldTypeMismatchException(...)
+#    字串 "nan" 會被拒絕（type_map['str'] 裡沒有 float32），而 JS 的
+#    JSON.stringify(NaN) 會變成 null，null 也一樣被拒絕。
+#    所以凡是「要能從 Node-RED 呼叫」的欄位，哨兵值不能用 NaN。
+#    Patrol.srv / Track.srv 用 0 當「用預設」才沒有這個問題。
+#
+# 一般情況填哪個都無所謂 —— 目前 nav2 的 yaw_goal_tolerance 是 3.14，
+# 終點朝向本來就不檢查。
+float32 yaw
+# 多久沒飛到就算失敗（秒）。0 = 用節點預設。
+# 這是節點自己的保險，不是 Nav2 的 —— Nav2 的行為樹有自己的復原邏輯，
+# 卡住時可能很久都不回 result。
+float32 timeout
+---
+bool success        # 是否「開始」導航（不代表已經飛到）
+string message
